@@ -1,0 +1,38 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-job
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          securityContext:
+            runAsNonRoot: true
+          containers:
+            - name: postgresql-client
+              imagePullPolicy: Always
+              image: alexarikel/postgresql-client:1.1
+              envFrom:
+                - secretRef:
+                    name: postgresdb-secret
+                - configMapRef:
+                    name: postgres-configmap
+              volumeMounts:
+              - name: input-file
+                mountPath: /tmp
+                readOnly: true
+              securityContext:
+                runAsUser: 1000
+          imagePullSecrets:
+          - name: docker-key
+          volumes:
+            - name: input-file
+              configMap:
+                name: postgres-configmap
+                items:
+                - key: "commands"
+                  path: "input_file"
+          terminationGracePeriodSeconds: 5
+          restartPolicy: OnFailure

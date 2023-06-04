@@ -1,0 +1,4 @@
+docker-key-secret.yaml
+postgres_secret.yaml
+*secret*
+*cred*
