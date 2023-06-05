@@ -1,24 +1,26 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: postgres-job
+  name: {{ .Release.Name }}
 spec:
-  schedule: "* * * * *"
+  schedule: "{{ .Values.schedule }}"
   jobTemplate:
     spec:
+      backoffLimit: 3
+      activeDeadlineSeconds: 300
       template:
         spec:
           securityContext:
             runAsNonRoot: true
           containers:
-            - name: postgresql-client
+            - name: {{ .Values.containerName }}
               imagePullPolicy: Always
-              image: alexarikel/postgresql-client:1.1
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
               envFrom:
                 - secretRef:
-                    name: postgresdb-secret
+                    name: {{ .Values.db.pass.secretName }}
                 - configMapRef:
-                    name: postgres-configmap
+                    name: {{ .Release.Name }}-configmap
               volumeMounts:
               - name: input-file
                 mountPath: /tmp
@@ -26,13 +28,13 @@ spec:
               securityContext:
                 runAsUser: 1000
           imagePullSecrets:
-          - name: docker-key
+          - name: {{ .Values.image.dockerKeySecret }}
           volumes:
             - name: input-file
               configMap:
-                name: postgres-configmap
+                name: {{ .Release.Name }}-configmap
                 items:
-                - key: "commands"
+                - key: commands
                   path: "input_file"
           terminationGracePeriodSeconds: 5
           restartPolicy: OnFailure

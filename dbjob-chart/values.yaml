@@ -1,0 +1,18 @@
+---
+db:
+  name: ""
+  serviceUrl: ""
+  port: ""
+  user: ""
+  pass:
+    secretName: ""
+    key: ""
+
+commands: {}
+
+schedule: ""
+containerName: database-client
+image:
+  repository: ""
+  tag: ""
+  dockerKeySecret: ""
